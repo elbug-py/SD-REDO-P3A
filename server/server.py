@@ -1,7 +1,7 @@
 import socket
 import threading
 
-HOST = '0.0.0.0'
+HOST = "0.0.0.0"
 # HOST = '127.0.0.1'
 PORT = 12345
 
@@ -15,9 +15,9 @@ aliases = []
 
 
 # Broadcast message to all clients
-def broadcast(message, sender=None):
+def broadcast(message, sender=None, hubIgnores=False):
     for client in clients:
-        if client != sender:
+        if client != sender and (hubIgnores is False or 'Hb' not in aliases[clients.index(client)]):
             client.send(message)
 
 
@@ -33,7 +33,9 @@ def handle_client(client):
             clients.remove(client)
             client.close()
             alias = aliases[index]
-            broadcast(f'{alias} has left the chat!'.encode('utf-8'))
+            broadcast(
+                f"{alias} has left the chat!".encode("utf-8"), hubIgnores=True
+            )
             aliases.remove(alias)
             break
 
@@ -42,20 +44,24 @@ def handle_client(client):
 def receive():
     while True:
         client, address = server.accept()
-        print(f'Connection established with {address}')
+        print(f"Connection established with {address}")
 
-        client.send('ALIAS'.encode('utf-8'))
-        alias = client.recv(1024).decode('utf-8')
+        client.send("ALIAS".encode("utf-8"))
+        alias = client.recv(1024).decode("utf-8")
         aliases.append(alias)
         clients.append(client)
 
-        print(f'The alias of this client is {alias}')
-        broadcast(f'{alias} has joined the chat!'.encode('utf-8'), client)
-        client.send('You are now connected!'.encode('utf-8'))
+        if alias is None or alias == "":
+            alias = f"UknwClient-{clients.index(client)}"
+        print(f"The alias of this client is {alias}")
+        broadcast(
+            f"{alias} has joined the chat!".encode("utf-8"), client, True
+        )
+        client.send("You are now connected!".encode("utf-8"))
 
         thread = threading.Thread(target=handle_client, args=(client,))
         thread.start()
 
 
-print('Server is listening...')
+print("Server is listening...")
 receive()

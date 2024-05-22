@@ -317,6 +317,10 @@ class CleverHubProtocolConnection:
         self.connection.connect(server_address)
 
     def send_hello(self):
+        # ! TEST ADD SOMETHING HERE
+        self.connection.sendall("ClvrHb".encode())
+        msg = self.connection.recv(1024).decode()
+        print(f"Received: {msg}")
         hello_message = self.house.get_hello_message()
         self.connection.sendall(hello_message.encode())
 

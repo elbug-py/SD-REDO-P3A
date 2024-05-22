@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "12345:12345"
+    tty: true
 
   client:
     build:
@@ -35,3 +36,7 @@ services:
       - "5000:5000"
     depends_on:
       - server
+      - client
+      - sim
+    stdin_open: true
+    tty: true
